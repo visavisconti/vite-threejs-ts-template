@@ -199,7 +199,7 @@ function init() {
   }
 
   // ==== 🐞 DEBUG GUI ====
-  
+  /*
   {
     gui = new GUI({ title: '🐞 Debug GUI', width: 300 })
 
@@ -259,7 +259,7 @@ function init() {
 
     gui.close()
   }
-    
+    */
 }
 
 function animate() {
