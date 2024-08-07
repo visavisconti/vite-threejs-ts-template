@@ -3,6 +3,7 @@ import {
   AmbientLight,
   AxesHelper,
   BoxGeometry,
+  SphereGeometry,
   Clock,
   GridHelper,
   LoadingManager,
@@ -16,6 +17,9 @@ import {
   PointLightHelper,
   Scene,
   WebGLRenderer,
+  PointsMaterial,
+  Points,
+  TorusKnotGeometry
 } from 'three'
 import { DragControls } from 'three/examples/jsm/controls/DragControls'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
@@ -33,7 +37,10 @@ let scene: Scene
 let loadingManager: LoadingManager
 let ambientLight: AmbientLight
 let pointLight: PointLight
-let cube: Mesh
+//changed Mesh to Points
+let cube: Points
+let sphere: Points
+let knot: Points
 let camera: PerspectiveCamera
 let cameraControls: OrbitControls
 let dragControls: DragControls
@@ -52,10 +59,10 @@ function init() {
   // ===== 🖼️ CANVAS, RENDERER, & SCENE =====
   {
     canvas = document.querySelector(`canvas#${CANVAS_ID}`)!
-    renderer = new WebGLRenderer({ canvas, antialias: true, alpha: true })
+    renderer = new WebGLRenderer({ canvas, antialias: false, alpha: false })
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
-    renderer.shadowMap.enabled = true
-    renderer.shadowMap.type = PCFSoftShadowMap
+    //renderer.shadowMap.enabled = true
+    //renderer.shadowMap.type = PCFSoftShadowMap
     scene = new Scene()
   }
 
@@ -95,18 +102,36 @@ function init() {
 
   // ===== 📦 OBJECTS =====
   {
-    const sideLength = 1
-    const cubeGeometry = new BoxGeometry(sideLength, sideLength, sideLength)
-    const cubeMaterial = new MeshStandardMaterial({
+    
+    const cubeGeometry = new BoxGeometry(1,1,1,10,10,10)
+    /*const cubeMaterial = new MeshStandardMaterial({
       color: '#f69f1f',
       metalness: 0.5,
       roughness: 0.7,
-    })
-    cube = new Mesh(cubeGeometry, cubeMaterial)
-    cube.castShadow = true
-    cube.position.y = 0.5
+    })*/
+   // Material 
+const cubeMaterial = new PointsMaterial({
+  size: 0.02,
+  sizeAttenuation: true
+});
+cubeMaterial.color.set('#d24825');
 
-    const planeGeometry = new PlaneGeometry(3, 3)
+
+    cube = new Points(cubeGeometry, cubeMaterial)
+    //cube.castShadow = true
+    // Particle systems
+    //const boxParticles = new THREE.Points(cubeGeometry, cubeMaterial);
+    //const cube = new Points(cubeGeometry, cubeMaterial);
+    
+
+    const sphereGeometry = new SphereGeometry(0.6, 32, 32);
+    sphere = new Points(sphereGeometry, cubeMaterial)
+
+    const knotGeometry = new TorusKnotGeometry( 0.6, 3, 64, 32 );
+    knot = new Points(knotGeometry, cubeMaterial)
+
+
+    /*const planeGeometry = new PlaneGeometry(3, 3)
     const planeMaterial = new MeshLambertMaterial({
       color: 'gray',
       emissive: 'teal',
@@ -119,8 +144,9 @@ function init() {
     plane.rotateX(Math.PI / 2)
     plane.receiveShadow = true
 
+    scene.add(plane)*/
+
     scene.add(cube)
-    scene.add(plane)
   }
 
   // ===== 🎥 CAMERA =====
@@ -186,9 +212,9 @@ function init() {
     pointLightHelper.visible = false
     scene.add(pointLightHelper)
 
-    const gridHelper = new GridHelper(20, 20, 'teal', 'darkgray')
+    /*const gridHelper = new GridHelper(20, 20, 'teal', 'darkgray')
     gridHelper.position.y = -0.01
-    scene.add(gridHelper)
+    scene.add(gridHelper)*/
   }
 
   // ===== 📈 STATS & CLOCK =====
@@ -262,14 +288,28 @@ function init() {
     
 }
 
+//Animate loop
+const tick = () => 
+  {
+    //update cube rotation
+    cube.rotation.x += 0.005
+    cube.rotation.y += 0.005
+    //sphereParticles.rotation.y -= 0.01
+    // torusParticles.rotation.x -= 0.01
+    // torusParticles.rotation.y -= 0.01
+  }
+
 function animate() {
   requestAnimationFrame(animate)
 
   stats.update()
 
   if (animation.enabled && animation.play) {
+    //tick()
     animations.rotate(cube, clock, Math.PI / 3)
-    animations.bounce(cube, clock, 1, 0.5, 0.5)
+    animations.rotate(sphere, clock, Math.PI / 3)
+    animations.rotate(knot, clock, Math.PI / 3)
+    //animations.bounce(cube, clock, 1, 0.5, 0.5)
   }
 
   if (resizeRendererToDisplaySize(renderer)) {
