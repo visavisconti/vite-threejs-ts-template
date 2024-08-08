@@ -19,7 +19,8 @@ import {
   WebGLRenderer,
   PointsMaterial,
   Points,
-  TorusKnotGeometry
+  TorusKnotGeometry,
+  CubeTextureLoader
 } from 'three'
 import { DragControls } from 'three/examples/jsm/controls/DragControls'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
@@ -49,6 +50,9 @@ let pointLightHelper: PointLightHelper
 let clock: Clock
 let stats: Stats
 let gui: GUI
+// Flag to track state
+let isTransforming: boolean
+let isCurrentlySphere: boolean
 
 const animation = { enabled: true, play: true }
 
@@ -110,11 +114,11 @@ function init() {
       roughness: 0.7,
     })*/
    // Material 
-const cubeMaterial = new PointsMaterial({
-  size: 0.02,
-  sizeAttenuation: true
-});
-cubeMaterial.color.set('#d24825');
+    const cubeMaterial = new PointsMaterial({
+      size: 0.02,
+      sizeAttenuation: true
+    });
+    cubeMaterial.color.set('#d24825');
 
 
     cube = new Points(cubeGeometry, cubeMaterial)
@@ -200,6 +204,17 @@ cubeMaterial.color.set('#d24825');
         toggleFullScreen(canvas)
       }
     })
+    // transform on click
+    window.addEventListener('click', (event) => {
+      if (event.target === canvas) {
+        if (isCurrentlySphere) {
+          transformToBox();
+        } else {
+          transformToSphere();
+        }
+      }
+    })
+
   }
 
   // ===== 🪄 HELPERS =====
@@ -285,8 +300,89 @@ cubeMaterial.color.set('#d24825');
 
     gui.close()
   }
-    
+
+  //=====transformation===
+  
+    let isTransforming = false
+    let isCurrentlySphere = false
+
+    // Function to handle the transformation to sphere
+  function transformToSphere() {
+    if (isTransforming) return;
+      isTransforming = true;
+
+    const duration = 10000; // Duration of animation in milliseconds
+    const startTime = performance.now();
+
+    function animateTransformation(currentTime) {
+      const elapsedTime = currentTime - startTime;
+      const progress = Math.min(elapsedTime / duration, 1);
+
+    // Interpolate between box and sphere geometries
+    //changed cubeGeometry and sphereGeometry to cube.geometry and ...
+    cube.geometry.attributes.position.array.forEach((value, index) => {
+      cube.geometry.attributes.position.array[index] = 
+        (1 - progress) * cube.geometry.attributes.position.array[index] + 
+        progress * knot.geometry.attributes.position.array[index];
+    });
+
+    cube.geometry.attributes.position.needsUpdate = true;
+
+    if (progress < 1) {
+      requestAnimationFrame(animateTransformation);
+    } else {
+        isTransforming = false;
+        isCurrentlySphere = true;
+      }
+    }
+  
+
+  requestAnimationFrame(animateTransformation);
 }
+  
+
+  //=====transformation back===
+  
+
+// Function to handle the transformation back to box
+function transformToBox() {
+  if (isTransforming) return;
+  isTransforming = true;
+
+  const duration = 10000; // Duration of animation in milliseconds
+  const startTime = performance.now();
+
+  function animateTransformationBack(currentTime) {
+    const elapsedTime = currentTime - startTime;
+    const progress = Math.min(elapsedTime / duration, 1);
+
+    // Interpolate between sphere and box geometries
+    cube.geometry.attributes.position.array.forEach((value, index) => {
+      cube.geometry.attributes.position.array[index] = 
+        (1 - progress) * knot.geometry.attributes.position.array[index] + 
+        progress * cube.geometry.attributes.position.array[index];
+    });
+
+    cube.geometry.attributes.position.needsUpdate = true;
+
+    if (progress < 1) {
+      requestAnimationFrame(animateTransformationBack);
+    } else {
+      isTransforming = false;
+      isCurrentlySphere = false;
+    }
+  }
+
+  requestAnimationFrame(animateTransformationBack);
+}
+}
+
+
+
+
+  
+    
+
 
 //Animate loop
 const tick = () => 
