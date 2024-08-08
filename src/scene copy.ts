@@ -42,7 +42,6 @@ let pointLight: PointLight
 let cube: Points
 let sphere: Points
 let knot: Points
-let box: Points
 let camera: PerspectiveCamera
 let cameraControls: OrbitControls
 let dragControls: DragControls
@@ -108,7 +107,7 @@ function init() {
   // ===== 📦 OBJECTS =====
   {
     
-  
+    const cubeGeometry = new BoxGeometry(1,1,1,10,10,10)
     
    // Material 
     const cubeMaterial = new PointsMaterial({
@@ -118,20 +117,20 @@ function init() {
     });
 
 
-    const cubeGeometry = new BoxGeometry(1,1,1,10,10,10)
+
     cube = new Points(cubeGeometry, cubeMaterial)
-    
+    .castShadow = true;
+  
+
     const sphereGeometry = new SphereGeometry(0.6, 32, 32);
     sphere = new Points(sphereGeometry, cubeMaterial)
 
     const knotGeometry = new TorusKnotGeometry( 0.6, 3, 64, 32 );
     knot = new Points(knotGeometry, cubeMaterial)
 
-    box = new Points(cubeGeometry.clone(), cubeMaterial)
 
 
-
-    scene.add(box)
+    scene.add(cube)
   }
 
   // ===== 🎥 CAMERA =====
@@ -143,12 +142,12 @@ function init() {
   // ===== 🕹️ CONTROLS =====
   {
     cameraControls = new OrbitControls(camera, canvas)
-    cameraControls.target = box.position.clone()
+    cameraControls.target = cube.position.clone()
     cameraControls.enableDamping = true
     cameraControls.autoRotate = false
     cameraControls.update()
 
-    dragControls = new DragControls([box], camera, renderer.domElement)
+    dragControls = new DragControls([cube], camera, renderer.domElement)
     dragControls.addEventListener('hoveron', (event) => {
       const mesh = event.object as Mesh
       const material = mesh.material as MeshStandardMaterial
@@ -228,21 +227,23 @@ function init() {
 
     const cubeOneFolder = gui.addFolder('Cube one')
 
-    cubeOneFolder.add(box.position, 'x').min(-5).max(5).step(0.5).name('pos x')
-    cubeOneFolder.add(box.position, 'y').min(-5).max(5).step(0.5).name('pos y')
-    cubeOneFolder.add(box.position, 'z').min(-5).max(5).step(0.5).name('pos z')
+    cubeOneFolder.add(cube.position, 'x').min(-5).max(5).step(0.5).name('pos x')
+    cubeOneFolder.add(cube.position, 'y').min(-5).max(5).step(0.5).name('pos y')
+    cubeOneFolder.add(cube.position, 'z').min(-5).max(5).step(0.5).name('pos z')
 
-    cubeOneFolder.addColor(box.material, 'color')
-    
+    cubeOneFolder.add(cube.material, 'wireframe')
+    cubeOneFolder.addColor(cube.material, 'color')
+    cubeOneFolder.add(cube.material, 'metalness', 0, 1, 0.1)
+    cubeOneFolder.add(cube.material, 'roughness', 0, 1, 0.1)
 
     cubeOneFolder
-      .add(box.rotation, 'x', -Math.PI * 2, Math.PI * 2, Math.PI / 4)
+      .add(cube.rotation, 'x', -Math.PI * 2, Math.PI * 2, Math.PI / 4)
       .name('rotate x')
     cubeOneFolder
-      .add(box.rotation, 'y', -Math.PI * 2, Math.PI * 2, Math.PI / 4)
+      .add(cube.rotation, 'y', -Math.PI * 2, Math.PI * 2, Math.PI / 4)
       .name('rotate y')
     cubeOneFolder
-      .add(box.rotation, 'z', -Math.PI * 2, Math.PI * 2, Math.PI / 4)
+      .add(cube.rotation, 'z', -Math.PI * 2, Math.PI * 2, Math.PI / 4)
       .name('rotate z')
 
     cubeOneFolder.add(animation, 'enabled').name('animated')
@@ -300,13 +301,13 @@ function init() {
 
     // Interpolate between box and sphere geometries
     //changed cubeGeometry and sphereGeometry to cube.geometry and ...
-    box.geometry.attributes.position.array.forEach((value, index) => {
-      box.geometry.attributes.position.array[index] = 
+    cube.geometry.attributes.position.array.forEach((value, index) => {
+      cube.geometry.attributes.position.array[index] = 
         (1 - progress) * cube.geometry.attributes.position.array[index] + 
         progress * knot.geometry.attributes.position.array[index];
     });
 
-    box.geometry.attributes.position.needsUpdate = true;
+    cube.geometry.attributes.position.needsUpdate = true;
 
     if (progress < 1) {
       requestAnimationFrame(animateTransformation);
@@ -333,13 +334,13 @@ function transformToBox() {
     const progress = Math.min(elapsedTime / duration, 1);
 
     // Interpolate between sphere and box geometries
-    box.geometry.attributes.position.array.forEach((value, index) => {
-      box.geometry.attributes.position.array[index] = 
+    cube.geometry.attributes.position.array.forEach((value, index) => {
+      cube.geometry.attributes.position.array[index] = 
         (1 - progress) * knot.geometry.attributes.position.array[index] + 
         progress * cube.geometry.attributes.position.array[index];
     });
 
-    box.geometry.attributes.position.needsUpdate = true;
+    cube.geometry.attributes.position.needsUpdate = true;
 
     if (progress < 1) {
       requestAnimationFrame(animateTransformationBack);
@@ -369,7 +370,6 @@ function animate() {
 
   if (animation.enabled && animation.play) {
     //tick()
-    animations.rotate(box, clock, Math.PI / 3)
     animations.rotate(cube, clock, Math.PI / 3)
     animations.rotate(sphere, clock, Math.PI / 3)
     animations.rotate(knot, clock, Math.PI / 3)
