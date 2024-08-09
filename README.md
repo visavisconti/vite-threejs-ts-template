@@ -30,3 +30,7 @@ Run build
 ```bash
 npm run preview
 ```
+
+## stuff to do
+
+do i need the value in the tranformation?

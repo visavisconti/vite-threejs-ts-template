@@ -1,18 +1,14 @@
-import GUI from 'lil-gui'
+//import GUI from 'lil-gui'
 import {
   AmbientLight,
-  AxesHelper,
+  //AxesHelper,
   BoxGeometry,
   SphereGeometry,
   Clock,
-  GridHelper,
   LoadingManager,
-  Mesh,
-  MeshLambertMaterial,
-  MeshStandardMaterial,
-  PCFSoftShadowMap,
+  //Mesh,
+  //MeshStandardMaterial,
   PerspectiveCamera,
-  PlaneGeometry,
   PointLight,
   PointLightHelper,
   Scene,
@@ -20,11 +16,11 @@ import {
   PointsMaterial,
   Points,
   TorusKnotGeometry,
-  CubeTextureLoader
+  
 } from 'three'
-import { DragControls } from 'three/examples/jsm/controls/DragControls'
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
-import Stats from 'three/examples/jsm/libs/stats.module'
+//import { DragControls } from 'three/examples/jsm/controls/DragControls'
+//import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
+//import Stats from 'three/examples/jsm/libs/stats.module'
 import * as animations from './helpers/animations'
 import { toggleFullScreen } from './helpers/fullscreen'
 import { resizeRendererToDisplaySize } from './helpers/responsiveness'
@@ -38,22 +34,19 @@ let scene: Scene
 let loadingManager: LoadingManager
 let ambientLight: AmbientLight
 let pointLight: PointLight
-//changed Mesh to Points
 let cube: Points
 let sphere: Points
 let knot: Points
 let box: Points
 let camera: PerspectiveCamera
-let cameraControls: OrbitControls
-let dragControls: DragControls
-let axesHelper: AxesHelper
+//let cameraControls: OrbitControls
+//let dragControls: DragControls
+//let axesHelper: AxesHelper
 let pointLightHelper: PointLightHelper
 let clock: Clock
-let stats: Stats
-let gui: GUI
+//let stats: Stats
+//let gui: GUI
 // Flag to track state
-let isTransforming: boolean
-let isCurrentlySphere: boolean
 
 const animation = { enabled: true, play: true }
 
@@ -117,7 +110,6 @@ function init() {
       color: '#f69f1f'
     });
 
-
     const cubeGeometry = new BoxGeometry(1,1,1,10,10,10)
     cube = new Points(cubeGeometry, cubeMaterial)
     
@@ -129,19 +121,20 @@ function init() {
 
     box = new Points(cubeGeometry.clone(), cubeMaterial)
 
-
-
     scene.add(box)
   }
-
   // ===== 🎥 CAMERA =====
   {
     camera = new PerspectiveCamera(50, canvas.clientWidth / canvas.clientHeight, 0.1, 100)
-    camera.position.set(2, 2, 5)
+    camera.position.set(0, 1, 3.5)
+    camera.rotation.set (-0.3,0,0)
+  
   }
 
   // ===== 🕹️ CONTROLS =====
   {
+
+    /*
     cameraControls = new OrbitControls(camera, canvas)
     cameraControls.target = box.position.clone()
     cameraControls.enableDamping = true
@@ -178,6 +171,7 @@ function init() {
       material.needsUpdate = true
     })
     dragControls.enabled = false
+*/
 
     // Full screen
     window.addEventListener('dblclick', (event) => {
@@ -195,35 +189,29 @@ function init() {
         }
       }
     })
-
   }
 
   // ===== 🪄 HELPERS =====
   {
-    axesHelper = new AxesHelper(4)
-    axesHelper.visible = false
-    scene.add(axesHelper)
+    //axesHelper = new AxesHelper(4)
+    //axesHelper.visible = false
+    //scene.add(axesHelper)
 
     pointLightHelper = new PointLightHelper(pointLight, undefined, 'orange')
     pointLightHelper.visible = false
     scene.add(pointLightHelper)
-
-    /*const gridHelper = new GridHelper(20, 20, 'teal', 'darkgray')
-    gridHelper.position.y = -0.01
-    scene.add(gridHelper)*/
   }
 
   // ===== 📈 STATS & CLOCK =====
   {
     clock = new Clock()
-
-    stats = new Stats()
+    //stats = new Stats()
     //document.body.appendChild(stats.dom)
   }
 
   // ==== 🐞 DEBUG GUI ====
   
-  {
+  /*{
     gui = new GUI({ title: '🐞 Debug GUI', width: 300 })
 
     const cubeOneFolder = gui.addFolder('Cube one')
@@ -231,10 +219,8 @@ function init() {
     cubeOneFolder.add(box.position, 'x').min(-5).max(5).step(0.5).name('pos x')
     cubeOneFolder.add(box.position, 'y').min(-5).max(5).step(0.5).name('pos y')
     cubeOneFolder.add(box.position, 'z').min(-5).max(5).step(0.5).name('pos z')
-
     cubeOneFolder.addColor(box.material, 'color')
     
-
     cubeOneFolder
       .add(box.rotation, 'x', -Math.PI * 2, Math.PI * 2, Math.PI / 4)
       .name('rotate x')
@@ -279,7 +265,7 @@ function init() {
     gui.add({ resetGui }, 'resetGui').name('RESET')
 
     gui.close()
-  }
+  }*/
 
   //=====transformation===
   
@@ -291,7 +277,7 @@ function init() {
     if (isTransforming) return;
       isTransforming = true;
 
-    const duration = 10000; // Duration of animation in milliseconds
+    const duration = 7000; // Duration of animation in milliseconds
     const startTime = performance.now();
 
     function animateTransformation(currentTime) {
@@ -316,7 +302,6 @@ function init() {
       }
     }
   
-
     requestAnimationFrame(animateTransformation);
   }
   
@@ -325,7 +310,7 @@ function transformToBox() {
   if (isTransforming) return;
   isTransforming = true;
 
-  const duration = 10000; // Duration of animation in milliseconds
+  const duration = 5000; // Duration of animation in milliseconds
   const startTime = performance.now();
 
   function animateTransformationBack(currentTime) {
@@ -351,14 +336,7 @@ function transformToBox() {
 
   requestAnimationFrame(animateTransformationBack);
 }
-
-
 }
-
-
-
-  
-
 
 //Animate loop
 
@@ -382,8 +360,7 @@ function animate() {
     camera.updateProjectionMatrix()
   }
 
-  cameraControls.update()
+  //cameraControls.update()
 
   renderer.render(scene, camera)
 }
-
